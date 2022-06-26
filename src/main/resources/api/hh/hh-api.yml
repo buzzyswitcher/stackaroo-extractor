@@ -1,0 +1,140 @@
+openapi: 3.0.3
+info:
+  title: API for stackaroo application
+  version: 1.0.0
+  contact:
+    email: volkov.e.n@gmail.com
+paths:
+components:
+  schemas:
+    HHVacancyArea:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyExperience:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyEmployment:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyEmployer:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyLangauge:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        level:
+          $ref: '#/components/schemas/HHVacancyLangaugeLevel'
+    HHVacancyLangaugeLevel:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyProfessionalRole:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    HHVacancyResponse:
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        key_skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/HHVacancyKeySkill'
+        schedule:
+          $ref: '#/components/schemas/HHVacancySchedule'
+        experience:
+          $ref: '#/components/schemas/HHVacancyExperience'
+        employment:
+          $ref: '#/components/schemas/HHVacancyEmployment'
+        salary:
+          $ref: '#/components/schemas/HHVacancySalary'
+        archived:
+          type: boolean
+        name:
+          type: string
+        area:
+          $ref: '#/components/schemas/HHVacancyArea'
+        initial_created_at:
+          type: string
+        created_at:
+          type: string
+        published_at:
+          type: string
+        employer:
+          $ref: '#/components/schemas/HHVacancyEmployer'
+        professional_roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/HHVacancyProfessionalRole'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/HHVacancyLangauge'
+    HHVacanciesIdResponse:
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HHVacancyId'
+        found:
+          type: integer
+        pages:
+          type: integer
+        per_page:
+          type: integer
+        page:
+          type: integer
+        clusters:
+          type: string
+        arguments:
+          type: string
+        alternate_url:
+          type: string
+    HHVacancyId:
+      properties:
+        id:
+          description: Идентификатор вакансии
+          type: string
+    HHVacancySalary:
+      description: Оклад
+      properties:
+        from:
+          type: number
+        to:
+          type: number
+        gross:
+          type: boolean
+        currency:
+          type: string
+    HHVacancySchedule:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    HHVacancyKeySkill:
+      properties:
+        name:
+          type: string
