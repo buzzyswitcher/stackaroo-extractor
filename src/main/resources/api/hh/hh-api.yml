@@ -31,15 +31,15 @@ components:
           type: string
         name:
           type: string
-    HHVacancyLangauge:
+    HHVacancyLanguage:
       properties:
         id:
           type: string
         name:
           type: string
         level:
-          $ref: '#/components/schemas/HHVacancyLangaugeLevel'
-    HHVacancyLangaugeLevel:
+          $ref: '#/components/schemas/HHVacancyLanguageLevel'
+    HHVacancyLanguageLevel:
       properties:
         id:
           type: string
@@ -90,7 +90,7 @@ components:
         languages:
           type: array
           items:
-            $ref: '#/components/schemas/HHVacancyLangauge'
+            $ref: '#/components/schemas/HHVacancyLanguage'
     HHVacanciesIdResponse:
       properties:
         items:
