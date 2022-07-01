@@ -1,7 +1,6 @@
 package org.buzzyswitcher.stackarooextractor.dao.entity;
 
 import lombok.Data;
-import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,8 +20,8 @@ public class Area {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "system", nullable = false)
-    private System system;
+    @JoinColumn(name = "recruit_system_id", nullable = false)
+    private RecruitSystem recruitSystem;
 
     private String systemId;
     private String name;

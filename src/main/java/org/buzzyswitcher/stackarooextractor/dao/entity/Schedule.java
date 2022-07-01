@@ -20,8 +20,8 @@ public class Schedule {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "system", nullable = false)
-    private System system;
+    @JoinColumn(name = "recruit_system_id", nullable = false)
+    private RecruitSystem recruitSystem;
 
     private String systemId;
     private String name;

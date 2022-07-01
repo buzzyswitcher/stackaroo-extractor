@@ -3,6 +3,7 @@ package org.buzzyswitcher.stackarooextractor.dao.entity;
 import lombok.Data;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -28,8 +29,13 @@ public class Vacancy {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "system", nullable = false)
-    private System system;
+    @JoinColumn(name = "recruit_system_id", nullable = false)
+    private RecruitSystem recruitSystem;
+
+    private String systemId;
+
+    @Column(length = 5000)
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "area_id")
@@ -65,7 +71,7 @@ public class Vacancy {
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "salary_id", referencedColumnName = "id")
     private Salary salary;
 

@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VacancyRepo extends CrudRepository<Vacancy, Integer> {
+
+    Vacancy findFirstBySystemId(String systemId);
 }

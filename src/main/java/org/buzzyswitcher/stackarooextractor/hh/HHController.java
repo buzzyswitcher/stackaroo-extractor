@@ -16,6 +16,8 @@ public class HHController {
 
     @GetMapping("/hh")
     public Set<String> test() {
-        return interactor.getIds();
+        Set<String> ids = interactor.getIds();
+        interactor.interact(ids);
+        return ids;
     }
 }
