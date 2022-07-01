@@ -1,6 +1,7 @@
 package org.buzzyswitcher.stackarooextractor.dao.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table
+@EqualsAndHashCode(exclude = "vacancy")
 public class Salary {
 
     @Id

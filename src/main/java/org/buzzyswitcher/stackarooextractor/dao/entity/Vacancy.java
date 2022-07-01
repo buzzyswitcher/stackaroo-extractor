@@ -34,7 +34,7 @@ public class Vacancy {
 
     private String systemId;
 
-    @Column(length = 5000)
+    @Column(length = 10000)
     private String description;
 
     @ManyToOne
@@ -62,7 +62,7 @@ public class Vacancy {
     private ProfessionalRole professionalRole;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(name = "skill",
+    @JoinTable(name = "vacancy_skill",
             joinColumns = @JoinColumn(name = "id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id"))
     private Set<KeySkill> skills = new HashSet<>();

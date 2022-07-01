@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface KeySkillRepo extends CrudRepository<KeySkill, Integer> {
+
+    Boolean existsByName(String name);
+    KeySkill findFirstByName(String name);
 }

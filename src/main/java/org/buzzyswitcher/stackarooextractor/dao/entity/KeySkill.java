@@ -1,6 +1,7 @@
 package org.buzzyswitcher.stackarooextractor.dao.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Data
 @Entity
 @Table
+@EqualsAndHashCode(exclude = "vacancies")
 public class KeySkill {
 
     @Id

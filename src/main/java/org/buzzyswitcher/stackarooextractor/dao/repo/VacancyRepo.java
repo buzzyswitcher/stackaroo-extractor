@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface VacancyRepo extends CrudRepository<Vacancy, Integer> {
 
     Vacancy findFirstBySystemId(String systemId);
+    Boolean existsBySystemId(String systemId);
 }
