@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AreaRepo extends CrudRepository<Area, Integer> {
+
+    boolean existsByName(String name);
+    Area findFirstByName(String name);
 }

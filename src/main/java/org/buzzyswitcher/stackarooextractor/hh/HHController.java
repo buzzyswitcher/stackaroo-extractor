@@ -20,9 +20,4 @@ public class HHController {
         interactor.downloadVacancies(ids);
         return ids;
     }
-
-    @GetMapping("/testbool")
-    public Boolean test_test() {
-        return interactor.test();
-    }
 }

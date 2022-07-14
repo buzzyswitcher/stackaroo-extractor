@@ -53,9 +53,11 @@ public class Vacancy {
     @JoinColumn(name = "experience_id")
     private Experience experience;
 
-    @ManyToOne
-    @JoinColumn(name = "language_id")
-    private Language language;
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(name = "vacancy_language",
+            joinColumns = @JoinColumn(name = "id"),
+            inverseJoinColumns = @JoinColumn(name = "language_id"))
+    private Set<Language> languages;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "vacancy_professional_role",
@@ -80,4 +82,5 @@ public class Vacancy {
     private LocalDateTime initialCreatedAt;
     private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
+    private LocalDateTime syncAt;
 }

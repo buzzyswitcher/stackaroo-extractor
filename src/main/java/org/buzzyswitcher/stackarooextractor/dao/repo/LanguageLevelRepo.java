@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LanguageLevelRepo extends CrudRepository<LanguageLevel, Integer> {
+
+    boolean existsByName(String name);
+    LanguageLevel findFirstByName(String name);
 }
