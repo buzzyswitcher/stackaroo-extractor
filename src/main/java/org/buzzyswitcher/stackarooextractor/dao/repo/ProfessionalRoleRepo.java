@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProfessionalRoleRepo extends CrudRepository<ProfessionalRole, Integer> {
+
+    boolean existsByName(String name);
+    ProfessionalRole findFirstByName(String name);
 }

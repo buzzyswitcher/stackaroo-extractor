@@ -57,9 +57,11 @@ public class Vacancy {
     @JoinColumn(name = "language_id")
     private Language language;
 
-    @ManyToOne
-    @JoinColumn(name = "professional_role_id")
-    private ProfessionalRole professionalRole;
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(name = "vacancy_professional_role",
+            joinColumns = @JoinColumn(name = "id"),
+            inverseJoinColumns = @JoinColumn(name = "professional_role_id"))
+    private Set<ProfessionalRole> professionalRoles;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "vacancy_skill",

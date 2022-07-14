@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ScheduleRepo extends CrudRepository<Schedule, Integer> {
+
+    boolean existsByName(String name);
+    Schedule findFirstByName(String name);
 }

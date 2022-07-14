@@ -2,16 +2,27 @@ package org.buzzyswitcher.stackarooextractor.hh;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.buzzyswitcher.stackarooextractor.dao.entity.Employer;
+import org.buzzyswitcher.stackarooextractor.dao.entity.Employment;
+import org.buzzyswitcher.stackarooextractor.dao.entity.Experience;
 import org.buzzyswitcher.stackarooextractor.dao.entity.KeySkill;
+import org.buzzyswitcher.stackarooextractor.dao.entity.ProfessionalRole;
 import org.buzzyswitcher.stackarooextractor.dao.entity.RecruitSystem;
 import org.buzzyswitcher.stackarooextractor.dao.entity.Salary;
+import org.buzzyswitcher.stackarooextractor.dao.entity.Schedule;
 import org.buzzyswitcher.stackarooextractor.dao.entity.Vacancy;
+import org.buzzyswitcher.stackarooextractor.dao.repo.EmployerRepo;
+import org.buzzyswitcher.stackarooextractor.dao.repo.EmploymentRepo;
+import org.buzzyswitcher.stackarooextractor.dao.repo.ExperienceRepo;
 import org.buzzyswitcher.stackarooextractor.dao.repo.KeySkillRepo;
+import org.buzzyswitcher.stackarooextractor.dao.repo.ProfessionalRoleRepo;
 import org.buzzyswitcher.stackarooextractor.dao.repo.RecruitSystemRepo;
+import org.buzzyswitcher.stackarooextractor.dao.repo.ScheduleRepo;
 import org.buzzyswitcher.stackarooextractor.dao.repo.VacancyRepo;
 import org.buzzyswitcher.stackarooextractor.model.HHVacanciesIdResponse;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyId;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyKeySkill;
+import org.buzzyswitcher.stackarooextractor.model.HHVacancyProfessionalRole;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyResponse;
 import org.buzzyswitcher.stackarooextractor.urlconstructor.UrlManager;
 import org.slf4j.Logger;
@@ -47,6 +58,11 @@ public class HHInteractor {
     KeySkillRepo keySkillRepo;
     RecruitSystemRepo recruitSystemRepo;
     HHUrl hhUrl;
+    EmployerRepo employerRepo;
+    EmploymentRepo employmentRepo;
+    ExperienceRepo experienceRepo;
+    ProfessionalRoleRepo professionalRoleRepo;
+    ScheduleRepo scheduleRepo;
 
     @PersistenceContext
     EntityManager em;
@@ -56,12 +72,26 @@ public class HHInteractor {
             KeySkillRepo keySkillRepo,
             RecruitSystemRepo recruitSystemRepo,
             VacancyRepo vacancyRepo,
-            UrlManager urlManager) {
+            UrlManager urlManager,
+            EmployerRepo employerRepo,
+            EmploymentRepo employmentRepo,
+            ExperienceRepo experienceRepo,
+            ProfessionalRoleRepo professionalRoleRepo,
+            ScheduleRepo scheduleRepo) {
         this.restTemplate = restTemplate;
         this.keySkillRepo = keySkillRepo;
         this.recruitSystemRepo = recruitSystemRepo;
         this.vacancyRepo = vacancyRepo;
         this.hhUrl = urlManager;
+        this.employerRepo = employerRepo;
+        this.employmentRepo = employmentRepo;
+        this.experienceRepo = experienceRepo;
+        this.professionalRoleRepo = professionalRoleRepo;
+        this.scheduleRepo = scheduleRepo;
+    }
+
+    public Boolean test() {
+        return keySkillRepo.existsByName("agile");
     }
 
     @Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
@@ -69,11 +99,13 @@ public class HHInteractor {
     public void startProcess() {
         LOGGER.info("START!!!!");
         Set<String> ids = getIds();
-        interact(ids);
+        Set<Vacancy> vacancies = downloadVacancies(ids);
+        vacancyRepo.saveAll(vacancies);
     }
 
-    public void interact(Set<String> ids) {
+    public Set<Vacancy> downloadVacancies(Set<String> ids) {
         RecruitSystem recruitSystem = recruitSystemRepo.findFirstByName("HEAD_HUNTER");
+        Set<Vacancy> vacancies = new HashSet<>();
         for (String id : ids) {
             Vacancy vacancy = null;
 
@@ -96,10 +128,12 @@ public class HHInteractor {
                     keySkill = new KeySkill();
                     keySkill.setRecruitSystem(recruitSystem);
                     keySkill.setName(skill.getName().toLowerCase());
+                    keySkillRepo.save(keySkill);
                 }
                 keySkill.getVacancies().add(vacancy);
                 skills.add(keySkill);
             }
+            vacancy.setSkills(skills);
 
             //Salary
             if (Objects.nonNull(response.getSalary())) {
@@ -118,16 +152,97 @@ public class HHInteractor {
                 vacancy.setSalary(salary);
             }
 
-            vacancy.setSkills(skills);
+            //Employer
+            if (Objects.nonNull(response.getEmployer())) {
+                Employer employer;
+                String employerName = response.getEmployer().getName();
+                if (employerRepo.existsByName(employerName)) {
+                    employer = employerRepo.findFirstByName(employerName);
+                } else {
+                    employer = new Employer();
+                    employer.setName(employerName);
+                    employer.setSystemId(response.getEmployer().getId());
+                    employer.setRecruitSystem(recruitSystem);
+                    employerRepo.save(employer);
+                }
+                vacancy.setEmployer(employer);
+            }
+
+            //Employment
+            if (Objects.nonNull(response.getEmployment())) {
+                Employment employment;
+                String employmentName = response.getEmployment().getName();
+                if (employmentRepo.existsByName(employmentName)) {
+                    employment = employmentRepo.findFirstByName(employmentName);
+                } else {
+                    employment = new Employment();
+                    employment.setName(employmentName);
+                    employment.setSystemId(response.getEmployment().getId());
+                    employment.setRecruitSystem(recruitSystem);
+                    employmentRepo.save(employment);
+                }
+                vacancy.setEmployment(employment);
+            }
+
+            //Experience
+            if (Objects.nonNull(response.getExperience())) {
+                Experience experience;
+                String employmentName = response.getEmployment().getName();
+                if (experienceRepo.existsByName(employmentName)) {
+                    experience = experienceRepo.findFirstByName(employmentName);
+                } else {
+                    experience = new Experience();
+                    experience.setName(employmentName);
+                    experience.setSystemId(response.getEmployment().getId());
+                    experience.setRecruitSystem(recruitSystem);
+                    experienceRepo.save(experience);
+                }
+                vacancy.setExperience(experience);
+            }
+
+            //Professional role
+            Set<ProfessionalRole> professionalRoles = new HashSet<>();
+            for (HHVacancyProfessionalRole role : response.getProfessionalRoles()) {
+                ProfessionalRole professionalRole;
+                if (professionalRoleRepo.existsByName(role.getName().toLowerCase())) {
+                    professionalRole = professionalRoleRepo.findFirstByName(role.getName().toLowerCase());
+                } else {
+                    professionalRole = new ProfessionalRole();
+                    professionalRole.setRecruitSystem(recruitSystem);
+                    professionalRole.setName(role.getName().toLowerCase());
+                    professionalRoleRepo.save(professionalRole);
+                }
+                professionalRole.getVacancies().add(vacancy);
+                professionalRoles.add(professionalRole);
+            }
+            vacancy.setProfessionalRoles(professionalRoles);
+
+            //Schedule
+            if (Objects.nonNull(response.getSchedule())) {
+                Schedule schedule;
+                String scheduleName = response.getEmployment().getName();
+                if (scheduleRepo.existsByName(scheduleName)) {
+                    schedule = scheduleRepo.findFirstByName(scheduleName);
+                } else {
+                    schedule = new Schedule();
+                    schedule.setName(scheduleName);
+                    schedule.setSystemId(response.getEmployment().getId());
+                    schedule.setRecruitSystem(recruitSystem);
+                    scheduleRepo.save(schedule);
+                }
+                vacancy.setSchedule(schedule);
+            }
+
+
             vacancy.setRecruitSystem(recruitSystem);
             vacancy.setSystemId(response.getId());
             vacancy.setDescription(response.getDescription());
             vacancy.setCreatedAt(LocalDateTime.parse(response.getCreatedAt(), formatter));
             vacancy.setInitialCreatedAt(LocalDateTime.parse(response.getInitialCreatedAt(), formatter));
             vacancy.setPublishedAt(LocalDateTime.parse(response.getPublishedAt(), formatter));
-            vacancyRepo.save(vacancy);
-            em.flush();
+            vacancies.add(vacancy);
         }
+        return vacancies;
     }
 
     public Set<String> getIds() {
@@ -135,7 +250,7 @@ public class HHInteractor {
         int page = 0;
         int pages = 19;
         while (page <= pages - 1) {
-            List<NameValuePair> param = buildParamsForIdQuery("java", page, "100", "96");
+            List<NameValuePair> param = buildParamsForIdQuery("java", page, "100", "96", "2");
 
             String url = hhUrl.getHHVacanciesId(param);
             try {
@@ -157,9 +272,10 @@ public class HHInteractor {
         return ids;
     }
 
-    private static List<NameValuePair> buildParamsForIdQuery(String text, int currentPage, String itemsOnPage, String professionalRole) {
+    private static List<NameValuePair> buildParamsForIdQuery(String text, int currentPage, String itemsOnPage, String professionalRole, String area) {
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair(HHConfig.TEXT, text));
+        params.add(new BasicNameValuePair(HHConfig.AREA_ID, area));
         params.add(new BasicNameValuePair(HHConfig.CURRENT_PAGE, String.valueOf(currentPage)));
         params.add(new BasicNameValuePair(HHConfig.ITEMS_ON_PAGE, itemsOnPage));
         params.add(new BasicNameValuePair(HHConfig.PROFESSIONAL_ROLE_ID, professionalRole));
@@ -167,7 +283,7 @@ public class HHInteractor {
     }
 
     private int getMaxPages() {
-        List<NameValuePair> params = buildParamsForIdQuery("java", 0, "100", "96");
+        List<NameValuePair> params = buildParamsForIdQuery("java", 0, "100", "96", "2");
         String url = hhUrl.getHHVacanciesId(params);
         ResponseEntity<HHVacanciesIdResponse> response = restTemplate.getForEntity(url, HHVacanciesIdResponse.class);
         return response.getBody().getPages();

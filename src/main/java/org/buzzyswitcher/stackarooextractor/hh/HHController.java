@@ -17,7 +17,12 @@ public class HHController {
     @GetMapping("/hh")
     public Set<String> test() {
         Set<String> ids = interactor.getIds();
-        interactor.interact(ids);
+        interactor.downloadVacancies(ids);
         return ids;
+    }
+
+    @GetMapping("/testbool")
+    public Boolean test_test() {
+        return interactor.test();
     }
 }

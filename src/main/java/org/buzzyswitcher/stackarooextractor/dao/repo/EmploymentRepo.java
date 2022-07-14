@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmploymentRepo extends CrudRepository<Employment, Integer> {
+
+    boolean existsByName(String name);
+    Employment findFirstByName(String name);
 }
