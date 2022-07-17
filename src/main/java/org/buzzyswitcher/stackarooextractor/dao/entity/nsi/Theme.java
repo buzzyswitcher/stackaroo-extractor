@@ -1,37 +1,33 @@
-package org.buzzyswitcher.stackarooextractor.dao.entity;
+package org.buzzyswitcher.stackarooextractor.dao.entity.nsi;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.buzzyswitcher.stackarooextractor.dao.entity.Vacancy;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @Entity
-@Table
+@Table(schema = "nsi")
+@Data
 @EqualsAndHashCode(exclude = "vacancies")
-public class Language {
+public class Theme {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recruit_system_id", nullable = false)
-    private RecruitSystem recruitSystem;
+    @Enumerated(value = EnumType.STRING)
+    private ThemeEnum theme;
 
-    private String systemId;
-    private String name;
-
-    @ManyToMany(mappedBy = "languages")
+    @ManyToMany(mappedBy = "themes")
     private Set<Vacancy> vacancies = new HashSet<>();
 }

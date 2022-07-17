@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table
+@Table(schema = "nsi")
 @Data
 public class RecruitSystem {
 

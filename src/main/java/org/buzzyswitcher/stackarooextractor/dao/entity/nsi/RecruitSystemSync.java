@@ -1,29 +1,29 @@
-package org.buzzyswitcher.stackarooextractor.dao.entity;
+package org.buzzyswitcher.stackarooextractor.dao.entity.nsi;
 
 import lombok.Data;
+import org.buzzyswitcher.stackarooextractor.dao.entity.RecruitSystem;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 
-@Data
 @Entity
-@Table
-public class Experience {
+@Table(schema = "nsi")
+@Data
+public class RecruitSystemSync {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recruit_system_id", nullable = false)
-    private RecruitSystem recruitSystem;
+    private LocalDateTime lastUpdateDateTime;
 
-    private String systemId;
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "recruit_system_id")
+    private RecruitSystem recruitSystem;
 }

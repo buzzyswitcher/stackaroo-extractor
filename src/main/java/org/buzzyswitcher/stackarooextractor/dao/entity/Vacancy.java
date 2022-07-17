@@ -1,6 +1,7 @@
 package org.buzzyswitcher.stackarooextractor.dao.entity;
 
 import lombok.Data;
+import org.buzzyswitcher.stackarooextractor.dao.entity.nsi.Theme;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -37,19 +38,19 @@ public class Vacancy {
     @Column(length = 10000)
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "area_id")
     private Area area;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employment_id")
     private Employment employment;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employer_id")
     private Employer employer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "experience_id")
     private Experience experience;
 
@@ -70,6 +71,12 @@ public class Vacancy {
             joinColumns = @JoinColumn(name = "id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id"))
     private Set<KeySkill> skills = new HashSet<>();
+
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(name = "vacancy_theme",
+            joinColumns = @JoinColumn(name = "vacancy_id"),
+            inverseJoinColumns = @JoinColumn(name = "theme_id"))
+    private Set<Theme> themes = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "schedule_id")
