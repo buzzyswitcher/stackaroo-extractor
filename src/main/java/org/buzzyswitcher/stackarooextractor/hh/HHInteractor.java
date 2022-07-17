@@ -99,31 +99,39 @@ public class HHInteractor {
     /**
      * Фильтрует извлеченные идентификаторы на предмет наличия в БД записи Vacancy с таким идентификаром.
      * В случае если такая вакансия есть, то к ней привязвается новая тема. Такая запись не попадет в итоговый сет из Id
-     * @param unfiltered извлеченные идентификаторы вакансий
+     * @param unfilteredSet извлеченные идентификаторы вакансий
      * @param contextTheme текущая тема
      * @return сет фильтрованных идентификаторов
      */
     @Transactional
-    public Set<String> filterVacancyIds(Set<String> unfiltered, ThemeEnum contextTheme) {
+    public Set<String> filterVacancyIds(Set<String> unfilteredSet, ThemeEnum contextTheme) {
         Set<String> filteredIdSet = new HashSet<>();
         Theme theme = themeRepo.findFirstByTheme(contextTheme);
-        for (String vacanyId : unfiltered) {
-            if (vacancyRepo.existsBySystemId(vacanyId)) {
-                if (!vacancyRepo.containingTheme(theme.getTheme().getText(), vacanyId)) {
-                    Vacancy vacancy = vacancyRepo.findFirstBySystemId(vacanyId);
+        LOGGER.info("Filter vacancy id set. Size of unfiltered set set: [{}]", unfilteredSet.size());
+        for (String vacancyId : unfilteredSet) {
+            if (vacancyRepo.existsBySystemId(vacancyId)) {
+                LOGGER.debug("Vacancy - system_id: [{}] exists in database", vacancyId);
+                if (!vacancyRepo.containingTheme(theme.getTheme().getText(), vacancyId)) {
+                    LOGGER.debug("Theme [{}] was added to vacancy with system_id [{}]", theme.getTheme().getText(), vacancyId);
+                    Vacancy vacancy = vacancyRepo.findFirstBySystemId(vacancyId);
                     vacancy.getThemes().add(theme);
+                    theme.getVacancies().add(vacancy);
                     vacancyRepo.save(vacancy);
+                    themeRepo.save(theme);
                 }
             } else {
-                filteredIdSet.add(vacanyId);
+                LOGGER.debug("Vacancy - system_id: [{}] is new. Add to filtered set", vacancyId);
+                filteredIdSet.add(vacancyId);
             }
         }
+        LOGGER.info("Filtering successfully finished. Filtered set size is: [{}]", filteredIdSet.size());
         return filteredIdSet;
     }
 
     @Transactional
-    public Set<Vacancy> convert(Set<HHVacancyResponse> responses) {
+    public Set<Vacancy> convert(Set<HHVacancyResponse> responses, ThemeEnum themeEnum) {
         RecruitSystem recruitSystem = recruitSystemRepo.findFirstByName("HEAD_HUNTER");
+        Theme theme = themeRepo.findFirstByTheme(themeEnum);
         Set<Vacancy> vacancies = new HashSet<>();
         for (HHVacancyResponse response : responses) {
             Vacancy vacancy = new Vacancy();
@@ -136,6 +144,9 @@ public class HHInteractor {
             vacancy.setPublishedAt(LocalDateTime.parse(response.getPublishedAt(), formatter));
             vacancy.setSyncAt(LocalDateTime.now());
 
+            vacancy.getThemes().add(theme);
+            theme.getVacancies().add(vacancy);
+
             initKeySkills(recruitSystem, vacancy, response);
             initSalary(vacancy, response);
             initEmployer(recruitSystem, vacancy, response);
@@ -147,6 +158,8 @@ public class HHInteractor {
             initLanguages(recruitSystem, vacancy, response);
 
             vacancies.add(vacancy);
+
+            themeRepo.save(theme);
         }
         vacancyRepo.saveAll(vacancies);
         return vacancies;

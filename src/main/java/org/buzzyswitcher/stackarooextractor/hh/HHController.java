@@ -45,16 +45,18 @@ public class HHController {
     @Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
     public Set<String> test() {
         for (ThemeEnum theme : ThemeEnum.values()) {
+            LOGGER.info("Start process for [{}] theme", theme.getText());
             Set<String> unfilteredIds = getIds(theme);
             Set<String> filteredIds = interactor.filterVacancyIds(unfilteredIds, theme);
             Set<HHVacancyResponse> responses = getResponses(filteredIds);
-            interactor.convert(responses);
+            interactor.convert(responses, theme);
         }
 
         return Collections.emptySet();
     }
 
     public Set<String> getIds(ThemeEnum theme) {
+        LOGGER.info("");
         Set<String> ids = new HashSet<>();
         int page = 0;
         int pages = 19;
@@ -62,11 +64,11 @@ public class HHController {
             List<NameValuePair> param = buildParamsForIdQuery(theme.getText(), page, "100", "96", "113");
 
             String url = hhUrl.getHHVacanciesId(param);
-            try {
-                url = URLDecoder.decode(url.toString(), "UTF-8"); // java.net class
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                url = URLDecoder.decode(url.toString(), "UTF-8"); // java.net class
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
             LOGGER.info("Current URL: [{}], page: [{}], pages: [{}]", url, page, pages);
             ResponseEntity<HHVacanciesIdResponse> response = restTemplate.getForEntity(url, HHVacanciesIdResponse.class);
             Set<String> idInPage = response.getBody().getItems().stream()
@@ -79,17 +81,20 @@ public class HHController {
                 pages = response.getBody().getPages();
             }
         }
-        LOGGER.info("ID's: [{}]", ids.toString());
 
         return ids;
     }
 
     public Set<HHVacancyResponse> getResponses(Set<String> filteredIds) {
+        LOGGER.info("Download responses for filtered set");
         Set<HHVacancyResponse> responses = new HashSet<>();
+        int cnt = 1;
         for(String id : filteredIds) {
             String url = hhUrl.getHHVacancy(id);
             HHVacancyResponse response = restTemplate.getForEntity(url, HHVacancyResponse.class).getBody();
             responses.add(response);
+            LOGGER.info("Download response: [{}] for vacancy system_id: [{}]", cnt, response.getId());
+            cnt++;
         }
         return responses;
     }
@@ -101,6 +106,8 @@ public class HHController {
         params.add(new BasicNameValuePair(HHConfig.CURRENT_PAGE, String.valueOf(currentPage)));
         params.add(new BasicNameValuePair(HHConfig.ITEMS_ON_PAGE, itemsOnPage));
         params.add(new BasicNameValuePair(HHConfig.PROFESSIONAL_ROLE_ID, professionalRole));
+        params.add(new BasicNameValuePair(HHConfig.DATE_FROM, "2022-07-16"));
+        params.add(new BasicNameValuePair(HHConfig.DATE_TO, "2022-07-17"));
         return params;
     }
 }
