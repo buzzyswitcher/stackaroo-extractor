@@ -130,10 +130,12 @@ public class HHInteractor {
 
     @Transactional
     public Set<Vacancy> convert(Set<HHVacancyResponse> responses, ThemeEnum themeEnum) {
+        LOGGER.info("Start converting");
         RecruitSystem recruitSystem = recruitSystemRepo.findFirstByName("HEAD_HUNTER");
         Theme theme = themeRepo.findFirstByTheme(themeEnum);
         Set<Vacancy> vacancies = new HashSet<>();
         for (HHVacancyResponse response : responses) {
+            LOGGER.info("Vacancy id - [{}]. START CONVERTING", response.getId());
             Vacancy vacancy = new Vacancy();
 
             vacancy.setRecruitSystem(recruitSystem);
@@ -166,16 +168,22 @@ public class HHInteractor {
     }
 
     private void initLanguages(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init languages", vacancy.getSystemId());
         Set<Language> languages = new HashSet<>();
         for (HHVacancyLanguage hhVacancyLanguage : response.getLanguages()) {
+            LOGGER.debug("Checking language id - [{}]", hhVacancyLanguage.getId());
             Language language;
             if (languageRepo.existsByName(hhVacancyLanguage.getName().toLowerCase())) {
+                LOGGER.debug("Language id - [{}] exists in database", hhVacancyLanguage.getId());
+                LOGGER.debug("Language id - [{}] load from database", hhVacancyLanguage.getId());
                 language = languageRepo.findFirstByName(hhVacancyLanguage.getName().toLowerCase());
             } else {
+                LOGGER.debug("Language id - [{}] is new", hhVacancyLanguage.getId());
                 language = new Language();
                 language.setRecruitSystem(recruitSystem);
                 language.setSystemId(hhVacancyLanguage.getId());
                 language.setName(hhVacancyLanguage.getName().toLowerCase());
+                LOGGER.debug("Language id - [{}] save to database", hhVacancyLanguage.getId());
                 languageRepo.save(language);
             }
             language.getVacancies().add(vacancy);
@@ -185,16 +193,22 @@ public class HHInteractor {
     }
 
     private void initSchedule(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init schedule", vacancy.getSystemId());
         if (Objects.nonNull(response.getLanguages())) {
             Schedule schedule;
             String scheduleName = response.getEmployment().getName();
+            LOGGER.debug("Checking schedule name - [{}]", scheduleName);
             if (scheduleRepo.existsByName(scheduleName)) {
+                LOGGER.debug("Schedule name - [{}] exists in database", scheduleName);
+                LOGGER.debug("Schedule name - [{}] load from database", scheduleName);
                 schedule = scheduleRepo.findFirstByName(scheduleName);
             } else {
+                LOGGER.debug("Schedule name - [{}] is new", scheduleName);
                 schedule = new Schedule();
                 schedule.setName(scheduleName);
                 schedule.setSystemId(response.getEmployment().getId());
                 schedule.setRecruitSystem(recruitSystem);
+                LOGGER.debug("Schedule name - [{}] save to database", scheduleName);
                 scheduleRepo.save(schedule);
             }
             vacancy.setSchedule(schedule);
@@ -202,6 +216,7 @@ public class HHInteractor {
     }
 
     private void initProfessionalRole(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init professional roles", vacancy.getSystemId());
         Set<ProfessionalRole> professionalRoles = new HashSet<>();
         for (HHVacancyProfessionalRole role : response.getProfessionalRoles()) {
             ProfessionalRole professionalRole;
@@ -220,6 +235,7 @@ public class HHInteractor {
     }
 
     private void initExperience(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init experience", vacancy.getSystemId());
         if (Objects.nonNull(response.getExperience())) {
             Experience experience;
             String experienceName = response.getExperience().getName();
@@ -237,6 +253,7 @@ public class HHInteractor {
     }
 
     private void initEmployment(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init employment", vacancy.getSystemId());
         if (Objects.nonNull(response.getEmployment())) {
             Employment employment;
             String employmentName = response.getEmployment().getName();
@@ -254,6 +271,7 @@ public class HHInteractor {
     }
 
     private void initEmployer(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init employer", vacancy.getSystemId());
         if (Objects.nonNull(response.getEmployer())) {
             Employer employer;
             String employerName = response.getEmployer().getName();
@@ -271,6 +289,7 @@ public class HHInteractor {
     }
 
     private void initArea(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init area", vacancy.getSystemId());
         if (Objects.nonNull(response.getArea())) {
             Area area;
             String areaName = response.getArea().getName();
@@ -288,6 +307,7 @@ public class HHInteractor {
     }
 
     private void initSalary(Vacancy vacancy, HHVacancyResponse response) {
+        LOGGER.debug("Vacancy id - [{}]: init salary", vacancy.getSystemId());
         if (Objects.nonNull(response.getSalary())) {
             Salary salary = new Salary();
             if (Objects.nonNull(response.getSalary())) {
@@ -306,20 +326,23 @@ public class HHInteractor {
     }
 
     private void initKeySkills(RecruitSystem recruitSystem, Vacancy vacancy, HHVacancyResponse response) {
-        Set<KeySkill> skills = new HashSet<>();
+        LOGGER.debug("Vacancy id - [{}]: init key skills", vacancy.getSystemId());
         for (HHVacancyKeySkill skill : response.getKeySkills()) {
             KeySkill keySkill;
+            LOGGER.debug("Checking key skill name - [{}]", skill.getName());
             if (keySkillRepo.existsByName(skill.getName().toLowerCase())) {
+                LOGGER.debug("Key skill name - [{}] exists and load from database", skill.getName());
                 keySkill = keySkillRepo.findFirstByName(skill.getName().toLowerCase());
             } else {
+                LOGGER.debug("Key skill name - [{}] is new", skill.getName());
                 keySkill = new KeySkill();
                 keySkill.setRecruitSystem(recruitSystem);
                 keySkill.setName(skill.getName().toLowerCase());
+                LOGGER.debug("Key skill name - [{}] save to database", skill.getName());
                 keySkillRepo.save(keySkill);
             }
             keySkill.getVacancies().add(vacancy);
-            skills.add(keySkill);
+            vacancy.getSkills().add(keySkill);
         }
-        vacancy.setSkills(skills);
     }
 }

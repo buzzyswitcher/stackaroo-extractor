@@ -7,10 +7,12 @@ import org.buzzyswitcher.stackarooextractor.dao.entity.Vacancy;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,12 +24,13 @@ import java.util.Set;
 public class Theme {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "theme_generator")
+    @SequenceGenerator(name="theme_generator", sequenceName = "theme_seq", allocationSize=50)
     private Integer id;
 
     @Enumerated(value = EnumType.STRING)
     private ThemeEnum theme;
 
-    @ManyToMany(mappedBy = "themes")
+    @ManyToMany(mappedBy = "themes", fetch = FetchType.LAZY)
     private Set<Vacancy> vacancies = new HashSet<>();
 }

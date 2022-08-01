@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
@@ -17,7 +18,8 @@ import javax.persistence.Table;
 public class Area {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "area_generator")
+    @SequenceGenerator(name="area_generator", sequenceName = "area_seq", allocationSize=50)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)

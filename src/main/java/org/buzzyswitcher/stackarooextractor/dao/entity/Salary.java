@@ -4,10 +4,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Data
@@ -17,7 +19,8 @@ import javax.persistence.Table;
 public class Salary {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "salary_generator")
+    @SequenceGenerator(name="salary_generator", sequenceName = "salary_seq", allocationSize=50)
     private Integer id;
 
     private Integer minVal;
@@ -25,6 +28,6 @@ public class Salary {
     private Boolean gross;
     private String currency;
 
-    @OneToOne(mappedBy = "salary")
+    @OneToOne(mappedBy = "salary", fetch = FetchType.LAZY)
     private Vacancy vacancy;
 }

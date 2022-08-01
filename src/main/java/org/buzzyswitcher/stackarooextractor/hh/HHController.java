@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,7 +50,7 @@ public class HHController {
             LOGGER.info("Start process for [{}] theme", theme.getText());
             Set<String> unfilteredIds = getIds(theme);
             Set<String> filteredIds = interactor.filterVacancyIds(unfilteredIds, theme);
-            Set<HHVacancyResponse> responses = getResponses(filteredIds);
+            Set<HHVacancyResponse> responses = getResponsesQ(filteredIds);
             interactor.convert(responses, theme);
         }
 
@@ -99,6 +101,33 @@ public class HHController {
         return responses;
     }
 
+    public Set<HHVacancyResponse> getResponsesQ(Set<String> filteredIds) {
+        LOGGER.info("Download responses for filtered set");
+        Set<HHVacancyResponse> responses = ConcurrentHashMap.newKeySet();
+
+        Integer awaitTermination = filteredIds.size() / 25;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+
+        for (String id : filteredIds) {
+            Runnable runnable = () -> {
+                String url = hhUrl.getHHVacancy(id);
+                HHVacancyResponse response = restTemplate.getForEntity(url, HHVacancyResponse.class).getBody();
+                responses.add(response);
+                LOGGER.info("Download response for vacancy system_id: [{}]", response.getId());
+            };
+            executorService.execute(runnable);
+        }
+
+        try {
+            executorService.awaitTermination(awaitTermination, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return responses;
+    }
+
     private static List<NameValuePair> buildParamsForIdQuery(String text, int currentPage, String itemsOnPage, String professionalRole, String area) {
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair(HHConfig.TEXT, text));
@@ -106,8 +135,8 @@ public class HHController {
         params.add(new BasicNameValuePair(HHConfig.CURRENT_PAGE, String.valueOf(currentPage)));
         params.add(new BasicNameValuePair(HHConfig.ITEMS_ON_PAGE, itemsOnPage));
         params.add(new BasicNameValuePair(HHConfig.PROFESSIONAL_ROLE_ID, professionalRole));
-        params.add(new BasicNameValuePair(HHConfig.DATE_FROM, "2022-07-16"));
-        params.add(new BasicNameValuePair(HHConfig.DATE_TO, "2022-07-17"));
+        params.add(new BasicNameValuePair(HHConfig.DATE_FROM, "2022-07-23"));
+        params.add(new BasicNameValuePair(HHConfig.DATE_TO, "2022-07-30"));
         return params;
     }
 }

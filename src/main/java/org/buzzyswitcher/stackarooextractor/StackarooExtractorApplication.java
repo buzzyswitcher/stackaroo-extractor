@@ -1,14 +1,11 @@
 package org.buzzyswitcher.stackarooextractor;
 
-import org.buzzyswitcher.stackarooextractor.hh.HHInteractor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-
-import java.util.Set;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
+@EnableCaching
 public class StackarooExtractorApplication {
 
     public static void main(String[] args) {

@@ -3,7 +3,7 @@ package org.buzzyswitcher.stackarooextractor.dao.entity.nsi;
 public enum ThemeEnum {
 
     JAVA("java"),
-    BACKEND("backend");
+    PYTHON("python");
 
     private final String text;
 

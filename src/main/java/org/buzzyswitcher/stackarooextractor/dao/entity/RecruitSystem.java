@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
@@ -14,7 +15,8 @@ import javax.persistence.Table;
 public class RecruitSystem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "recruit_system_generator")
+    @SequenceGenerator(name="recruit_system_generator", sequenceName = "recruit_system_seq", allocationSize=50)
     private Integer id;
 
     private String name;

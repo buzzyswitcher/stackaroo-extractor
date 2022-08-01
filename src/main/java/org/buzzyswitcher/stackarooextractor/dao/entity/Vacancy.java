@@ -15,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,10 +27,11 @@ import java.util.Set;
 public class Vacancy {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name="vacancy_generator", sequenceName = "vacancy_seq", allocationSize=50)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruit_system_id", nullable = false)
     private RecruitSystem recruitSystem;
 
@@ -78,7 +80,7 @@ public class Vacancy {
             inverseJoinColumns = @JoinColumn(name = "theme_id"))
     private Set<Theme> themes = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 

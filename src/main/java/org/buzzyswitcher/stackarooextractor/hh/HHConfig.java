@@ -19,4 +19,5 @@ public class HHConfig {
     public static final String PROFESSIONAL_ROLE_ID = "professional_role";
 
     public static final String DATE_PATTERN = "YYYY-MM-DD";
+
 }

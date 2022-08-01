@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 
@@ -18,7 +19,8 @@ import java.time.LocalDateTime;
 public class RecruitSystemSync {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name="recruit_system_sync_generator", sequenceName = "recruit_system_sync_seq", allocationSize=50)
     private Integer id;
 
     private LocalDateTime lastUpdateDateTime;

@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +23,8 @@ import java.util.Set;
 public class ProfessionalRole {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "professional_role_generator")
+    @SequenceGenerator(name="professional_role_generator", sequenceName = "professional_role_seq", allocationSize=50)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +34,6 @@ public class ProfessionalRole {
     private String systemId;
     private String name;
 
-    @ManyToMany(mappedBy = "professionalRoles")
+    @ManyToMany(mappedBy = "professionalRoles", fetch = FetchType.LAZY)
     private Set<Vacancy> vacancies = new HashSet<>();
 }

@@ -1,4 +1,4 @@
-INSERT INTO nsi.theme (theme) VALUES('JAVA');
-INSERT INTO nsi.theme (theme) VALUES('BACKEND');
+INSERT INTO nsi.theme (id, theme) VALUES(1, 'JAVA');
+INSERT INTO nsi.theme (id, theme) VALUES(2, 'PYTHON');
 
-INSERT INTO nsi.recruit_system (name) VALUES('HEAD_HUNTER');
+INSERT INTO nsi.recruit_system (id, name) VALUES(1, 'HEAD_HUNTER');

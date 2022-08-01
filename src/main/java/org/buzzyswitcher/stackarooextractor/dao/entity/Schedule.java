@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Data
@@ -17,7 +18,8 @@ import javax.persistence.Table;
 public class Schedule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "schedule_generator")
+    @SequenceGenerator(name="schedule_generator", sequenceName = "schedule_seq", allocationSize=50)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
