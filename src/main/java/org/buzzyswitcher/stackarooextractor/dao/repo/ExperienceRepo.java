@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ExperienceRepo extends CrudRepository<Experience, Integer> {
+public interface ExperienceRepo extends HiberRepo<Experience>, CrudRepository<Experience, Integer> {
 
     boolean existsByName(String name);
     Experience findFirstByName(String name);

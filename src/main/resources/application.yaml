@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/stackaroo_rdb
+    username: postgres
+    password: postgres
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+  sql:
+    init:
+      mode: never
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create
+      naming:
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    properties:
+      javax:
+        persistence:
+          sharedCache:
+            mode: ALL
+      hibernate:
+        cache:
+          use_second_level_cache: true
+          region:
+            factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+        jdbc:
+          batch_size: 50
+        generate_statistics: true
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        format_sql: true
+        order_updates: true
+        order_inserts: true
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 6
+    show-sql: false
+logging:
+  level:
+    org.buzzyswitcher.stackarooextractor: debug
+    #org.hibernate.stat: debug
+    #org.hibernate.type: trace
+  file:
+    path: ./log/
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB

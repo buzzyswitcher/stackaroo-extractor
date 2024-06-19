@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface EmployerRepo extends CrudRepository<Employer, Integer> {
+public interface EmployerRepo extends HiberRepo<Employer>, CrudRepository<Employer, Integer> {
 
     boolean existsByName(String name);
     Employer findFirstByName(String name);

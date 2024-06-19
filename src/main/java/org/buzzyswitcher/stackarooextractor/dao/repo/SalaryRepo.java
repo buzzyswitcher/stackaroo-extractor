@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SalaryRepo extends CrudRepository<Salary, Integer> {
+public interface SalaryRepo extends HiberRepo<Salary>, CrudRepository<Salary, Integer> {
 }

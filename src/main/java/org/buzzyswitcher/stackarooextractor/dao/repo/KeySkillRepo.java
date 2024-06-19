@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface KeySkillRepo extends CrudRepository<KeySkill, Integer> {
+public interface KeySkillRepo extends HiberRepo<KeySkill>, CrudRepository<KeySkill, Integer> {
 
     Boolean existsByName(String name);
     KeySkill findFirstByName(String name);

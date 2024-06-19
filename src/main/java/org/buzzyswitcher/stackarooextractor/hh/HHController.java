@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -44,13 +45,13 @@ public class HHController {
     }
 
     @GetMapping("/hh")
-    @Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
+    //@Scheduled(fixedRate = 1000 * 100)
     public Set<String> test() {
         for (ThemeEnum theme : ThemeEnum.values()) {
             LOGGER.info("Start process for [{}] theme", theme.getText());
             Set<String> unfilteredIds = getIds(theme);
             Set<String> filteredIds = interactor.filterVacancyIds(unfilteredIds, theme);
-            Set<HHVacancyResponse> responses = getResponsesQ(filteredIds);
+            Set<HHVacancyResponse> responses = getResponses(filteredIds);
             interactor.convert(responses, theme);
         }
 
@@ -61,7 +62,7 @@ public class HHController {
         LOGGER.info("");
         Set<String> ids = new HashSet<>();
         int page = 0;
-        int pages = 19;
+        int pages = 100;
         while (page <= pages - 1) {
             List<NameValuePair> param = buildParamsForIdQuery(theme.getText(), page, "100", "96", "113");
 
@@ -91,12 +92,17 @@ public class HHController {
         LOGGER.info("Download responses for filtered set");
         Set<HHVacancyResponse> responses = new HashSet<>();
         int cnt = 1;
-        for(String id : filteredIds) {
+        for (String id : filteredIds) {
             String url = hhUrl.getHHVacancy(id);
             HHVacancyResponse response = restTemplate.getForEntity(url, HHVacancyResponse.class).getBody();
             responses.add(response);
             LOGGER.info("Download response: [{}] for vacancy system_id: [{}]", cnt, response.getId());
             cnt++;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return responses;
     }
@@ -107,14 +113,20 @@ public class HHController {
 
         Integer awaitTermination = filteredIds.size() / 25;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         for (String id : filteredIds) {
             Runnable runnable = () -> {
-                String url = hhUrl.getHHVacancy(id);
-                HHVacancyResponse response = restTemplate.getForEntity(url, HHVacancyResponse.class).getBody();
-                responses.add(response);
-                LOGGER.info("Download response for vacancy system_id: [{}]", response.getId());
+
+                try {
+                    String url = hhUrl.getHHVacancy(id);
+                    HHVacancyResponse response = restTemplate.getForEntity(url, HHVacancyResponse.class).getBody();
+                    responses.add(response);
+                    LOGGER.info("Download response for vacancy system_id: [{}]", response.getId());
+                } catch (HttpClientErrorException hcee) {
+                    LOGGER.info(hcee.getResponseBodyAsString());
+                }
+
             };
             executorService.execute(runnable);
         }
@@ -135,8 +147,8 @@ public class HHController {
         params.add(new BasicNameValuePair(HHConfig.CURRENT_PAGE, String.valueOf(currentPage)));
         params.add(new BasicNameValuePair(HHConfig.ITEMS_ON_PAGE, itemsOnPage));
         params.add(new BasicNameValuePair(HHConfig.PROFESSIONAL_ROLE_ID, professionalRole));
-        params.add(new BasicNameValuePair(HHConfig.DATE_FROM, "2022-07-23"));
-        params.add(new BasicNameValuePair(HHConfig.DATE_TO, "2022-07-30"));
+        params.add(new BasicNameValuePair(HHConfig.DATE_FROM, "2024-01-01"));
+        params.add(new BasicNameValuePair(HHConfig.DATE_TO, "2024-06-19"));
         return params;
     }
 }

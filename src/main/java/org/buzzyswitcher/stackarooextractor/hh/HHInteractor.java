@@ -28,15 +28,11 @@ import org.buzzyswitcher.stackarooextractor.model.HHVacancyKeySkill;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyLanguage;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyProfessionalRole;
 import org.buzzyswitcher.stackarooextractor.model.HHVacancyResponse;
-import org.buzzyswitcher.stackarooextractor.urlconstructor.UrlManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,29 +46,22 @@ public class HHInteractor {
     private static final Logger LOGGER = LoggerFactory.getLogger(HHInteractor.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
-    RestTemplate restTemplate;
-    VacancyRepo vacancyRepo;
-    KeySkillRepo keySkillRepo;
-    RecruitSystemRepo recruitSystemRepo;
-    HHUrl hhUrl;
-    EmployerRepo employerRepo;
-    EmploymentRepo employmentRepo;
-    ExperienceRepo experienceRepo;
-    ProfessionalRoleRepo professionalRoleRepo;
-    ScheduleRepo scheduleRepo;
-    LanguageRepo languageRepo;
-    AreaRepo areaRepo;
-    ThemeRepo themeRepo;
-
-    @PersistenceContext
-    EntityManager em;
+    private final VacancyRepo vacancyRepo;
+    private final KeySkillRepo keySkillRepo;
+    private final RecruitSystemRepo recruitSystemRepo;
+    private final EmployerRepo employerRepo;
+    private final EmploymentRepo employmentRepo;
+    private final ExperienceRepo experienceRepo;
+    private final ProfessionalRoleRepo professionalRoleRepo;
+    private final ScheduleRepo scheduleRepo;
+    private final LanguageRepo languageRepo;
+    private final AreaRepo areaRepo;
+    private final ThemeRepo themeRepo;
 
     public HHInteractor(
-            RestTemplate restTemplate,
             KeySkillRepo keySkillRepo,
             RecruitSystemRepo recruitSystemRepo,
             VacancyRepo vacancyRepo,
-            UrlManager urlManager,
             EmployerRepo employerRepo,
             EmploymentRepo employmentRepo,
             ExperienceRepo experienceRepo,
@@ -81,11 +70,9 @@ public class HHInteractor {
             LanguageRepo languageRepo,
             AreaRepo areaRepo,
             ThemeRepo themeRepo) {
-        this.restTemplate = restTemplate;
         this.keySkillRepo = keySkillRepo;
         this.recruitSystemRepo = recruitSystemRepo;
         this.vacancyRepo = vacancyRepo;
-        this.hhUrl = urlManager;
         this.employerRepo = employerRepo;
         this.employmentRepo = employmentRepo;
         this.experienceRepo = experienceRepo;
@@ -116,8 +103,8 @@ public class HHInteractor {
                     Vacancy vacancy = vacancyRepo.findFirstBySystemId(vacancyId);
                     vacancy.getThemes().add(theme);
                     theme.getVacancies().add(vacancy);
-                    vacancyRepo.save(vacancy);
-                    themeRepo.save(theme);
+                    vacancyRepo.merge(vacancy);
+                    themeRepo.merge(theme);
                 }
             } else {
                 LOGGER.debug("Vacancy - system_id: [{}] is new. Add to filtered set", vacancyId);
@@ -161,9 +148,9 @@ public class HHInteractor {
 
             vacancies.add(vacancy);
 
-            themeRepo.save(theme);
+            themeRepo.merge(theme);
         }
-        vacancyRepo.saveAll(vacancies);
+        vacancyRepo.persistAllAndFlush(vacancies);
         return vacancies;
     }
 
@@ -184,7 +171,7 @@ public class HHInteractor {
                 language.setSystemId(hhVacancyLanguage.getId());
                 language.setName(hhVacancyLanguage.getName().toLowerCase());
                 LOGGER.debug("Language id - [{}] save to database", hhVacancyLanguage.getId());
-                languageRepo.save(language);
+                languageRepo.persist(language);
             }
             language.getVacancies().add(vacancy);
             languages.add(language);
@@ -209,7 +196,7 @@ public class HHInteractor {
                 schedule.setSystemId(response.getEmployment().getId());
                 schedule.setRecruitSystem(recruitSystem);
                 LOGGER.debug("Schedule name - [{}] save to database", scheduleName);
-                scheduleRepo.save(schedule);
+                scheduleRepo.persist(schedule);
             }
             vacancy.setSchedule(schedule);
         }
@@ -226,7 +213,7 @@ public class HHInteractor {
                 professionalRole = new ProfessionalRole();
                 professionalRole.setRecruitSystem(recruitSystem);
                 professionalRole.setName(role.getName().toLowerCase());
-                professionalRoleRepo.save(professionalRole);
+                professionalRoleRepo.persist(professionalRole);
             }
             professionalRole.getVacancies().add(vacancy);
             professionalRoles.add(professionalRole);
@@ -246,7 +233,7 @@ public class HHInteractor {
                 experience.setName(experienceName);
                 experience.setSystemId(response.getExperience().getId());
                 experience.setRecruitSystem(recruitSystem);
-                experienceRepo.save(experience);
+                experienceRepo.persist(experience);
             }
             vacancy.setExperience(experience);
         }
@@ -264,7 +251,7 @@ public class HHInteractor {
                 employment.setName(employmentName);
                 employment.setSystemId(response.getEmployment().getId());
                 employment.setRecruitSystem(recruitSystem);
-                employmentRepo.save(employment);
+                employmentRepo.persist(employment);
             }
             vacancy.setEmployment(employment);
         }
@@ -282,7 +269,7 @@ public class HHInteractor {
                 employer.setName(employerName);
                 employer.setSystemId(response.getEmployer().getId());
                 employer.setRecruitSystem(recruitSystem);
-                employerRepo.save(employer);
+                employerRepo.persist(employer);
             }
             vacancy.setEmployer(employer);
         }
@@ -300,7 +287,7 @@ public class HHInteractor {
                 area.setName(areaName);
                 area.setSystemId(response.getArea().getId());
                 area.setRecruitSystem(recruitSystem);
-                areaRepo.save(area);
+                areaRepo.persist(area);
             }
             vacancy.setArea(area);
         }
@@ -339,7 +326,7 @@ public class HHInteractor {
                 keySkill.setRecruitSystem(recruitSystem);
                 keySkill.setName(skill.getName().toLowerCase());
                 LOGGER.debug("Key skill name - [{}] save to database", skill.getName());
-                keySkillRepo.save(keySkill);
+                keySkillRepo.persist(keySkill);
             }
             keySkill.getVacancies().add(vacancy);
             vacancy.getSkills().add(keySkill);
